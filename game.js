@@ -17,7 +17,7 @@ Q.Sprite.extend("Mario",{
 
 	this._super(p, {
 		sheet: "marioR",
-		x: 30,
+		x: 50,
 		y: 500
 
 	});
@@ -28,9 +28,9 @@ Q.Sprite.extend("Mario",{
 	step: function(dt){
 
 		if(this.p.y>600){
-			this.p.x=150;
-			this.p.y=380;
-			this.p.vy=0;
+
+			 Q.stageScene("endGame",1, { label: "You died" });
+			 this.destroy();
 		}
 
 	}
@@ -53,7 +53,9 @@ Q.Sprite.extend("Goomba",{
 
 		if(collision.obj.isA("Mario"))
 		{
-			collision.obj.destroy();
+			
+			Q.stageScene("endGame",1, { label: "You died" });
+				collision.obj.destroy();
 		}
 	});
 
@@ -61,6 +63,7 @@ Q.Sprite.extend("Goomba",{
 		if(collision.obj.isA("Mario")){
 			this.destroy();
 			collision.obj.p.vy = -300;
+
 		}
 	});
 
@@ -90,7 +93,8 @@ Q.Sprite.extend("Bloopa",{
 
 		if(collision.obj.isA("Mario"))
 		{
-			collision.obj.destroy();
+				Q.stageScene("endGame",1, { label: "You died" });
+				collision.obj.destroy();
 		}
 	});
 
@@ -108,23 +112,58 @@ Q.Sprite.extend("Bloopa",{
 			this.p.vy= -this.p.upwardSpeed;
 		}
 	}
-})
+});
+
+Q.Sprite.extend("Princess",{
+	init:function(p){
+		this._super(p,{
+			sheet:"princess",
+			x:90,
+			y:400
+			
+			
+		});
+		this.add("2d");
+		this.on("hit.sprite",function(collision){
+
+			if(collision.obj.isA("Mario")){
+				Q.stageScene("endGame",1,{label:"You Won!"});
+				collision.obj.destroy();
+			}
+		})
+	}
+		
+});
 
 
+Q.loadTMX("mainTitle.png,princess.png, bloopa.png, bloopa.json, goomba.png,goomba.json, mario_small.json, mario_small.png, level.tmx",function(){
+		
 
-
-Q.scene("level1",function(stage)
-{
-	Q.loadTMX("bloopa.png, bloopa.json, goomba.png,goomba.json, mario_small.json, mario_small.png, level.tmx",function(){
-		Q.stageTMX("level.tmx",stage)
+	Q.sheet("princess","princess.png",{
+			tilew:30,
+			tileh:50,
+			sx: 0,
+			sy:0
+		});
 
 		Q.compileSheets("mario_small.png","mario_small.json");
 		Q.compileSheets("goomba.png","goomba.json");
 		Q.compileSheets("bloopa.png","bloopa.json");
 
-		var player = stage.insert(new Q.Mario());
-		var goomba = stage.insert(new Q.Goomba());
-		var bloopa = stage.insert(new Q.Bloopa());
+		Q.stageScene("mainTitleScene");
+
+});		
+
+Q.scene("level1",function(stage)
+{
+
+
+	Q.stageTMX("level.tmx",stage)
+		
+	var player = stage.insert(new Q.Mario());
+	var goomba = stage.insert(new Q.Goomba());
+	var bloopa = stage.insert(new Q.Bloopa());
+	var princess = stage.insert(new Q.Princess());
 
 
 	stage.add("viewport").follow(player);
@@ -133,29 +172,59 @@ Q.scene("level1",function(stage)
 
 
 
-	});	
-
-
-
-	
-
-	
-
 	
 
 });
 
-Q.stageScene("level1");
+Q.scene('mainTitleScene',function(stage) {
 
 
+  var box = stage.insert(new Q.UI.Container({
+    x: Q.width/2, y: Q.height/2
+  }));
+  
+  var button = box.insert(new Q.UI.Button({ x: 0, y: 0, fill: "#CCCCCC",
+                                           asset: "mainTitle.png" }))
 
 
+		Q.input.on("confirm",this,function(){
+			Q.clearStages();
+			Q.stageScene("level1");
+
+			
+		});
+		
+		button.on("click",function() {
+			Q.clearStages();
+			Q.stageScene("level1");
+			
+		});
 
 
+});
 
 
+Q.scene('endGame',function(stage) {
+  var box = stage.insert(new Q.UI.Container({
+    x: Q.width/2, y: Q.height/2, fill: "rgba(0,0,0,0.5)"
+  }));
+  
+  var button = box.insert(new Q.UI.Button({ x: 0, y: 0, fill: "#CCCCCC",
+                                           label: "Go to menu" }))         
+  var label = box.insert(new Q.UI.Text({x:10, y: -10 - button.p.h, 
+                                        label: stage.options.label }));
+  button.on("click",function() {
+    Q.clearStages();
+    Q.stageScene('mainTitleScene');
+  });
+  Q.input.on("confirm",this,function(){
+			Q.clearStages();
+			Q.stageScene("mainTitleScene");
 
-
+			
+		});
+  box.fit(20);
+});
 
 
 
