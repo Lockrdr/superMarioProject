@@ -39,7 +39,7 @@ Q.Sprite.extend("Mario",{
 	this._super(p, {
 		sheet: "marioR",
 		sprite:"marioAnim",
-		x: 50,
+		x: 550,
 		y: 500,
 		jumpSpeed:-600
 
@@ -166,7 +166,8 @@ Q.Sprite.extend("Princess",{
 });
 
 
-Q.loadTMX("mainTitle.png,princess.png, bloopa.png, bloopa.json, goomba.png,goomba.json, mario_small.json, mario_small.png, level.tmx",function(){
+
+Q.loadTMX("coin.png, coin.json,mainTitle.png,princess.png, bloopa.png, bloopa.json, goomba.png,goomba.json, mario_small.json, mario_small.png, level.tmx",function(){
 		
 
 	Q.sheet("princess","princess.png",{
@@ -179,10 +180,38 @@ Q.loadTMX("mainTitle.png,princess.png, bloopa.png, bloopa.json, goomba.png,goomb
 		Q.compileSheets("mario_small.png","mario_small.json");
 		Q.compileSheets("goomba.png","goomba.json");
 		Q.compileSheets("bloopa.png","bloopa.json");
+		Q.compileSheets("coin.png","coin.json");
 
 		Q.stageScene("mainTitleScene");
 
 });		
+
+Q.UI.Text.extend("Score",{
+
+
+	init:function(p){
+		this._super({
+			label:"Score 0",
+			x:75,
+			y:0
+		});
+
+		Q.state.on("change.score",this,"score");
+	},
+	score: function(score){
+		this.p.label="Score "+score;
+	}
+});
+
+Q.scene("HUD",function(stage){
+
+	var container = stage.insert(new Q.UI.Container({
+		x:0,y:0
+	}));
+	var label= container.insert(new Q.Score());
+
+	Q.state.set("score",0);
+})
 
 Q.scene("level1",function(stage)
 {
@@ -194,6 +223,21 @@ Q.scene("level1",function(stage)
 	var goomba = stage.insert(new Q.Goomba());
 	var bloopa = stage.insert(new Q.Bloopa());
 	var princess = stage.insert(new Q.Princess());
+	
+
+	stage.insert(new Q.Coin({x:630,y:420}));
+	stage.insert(new Q.Coin({x:660,y:420}));
+	stage.insert(new Q.Coin({x:690,y:420}));
+	stage.insert(new Q.Coin({x:720,y:420}));
+	stage.insert(new Q.Coin({x:750,y:420}));
+	stage.insert(new Q.Coin({x:780,y:420}));
+
+	stage.insert(new Q.Coin({x:630,y:460}));
+	stage.insert(new Q.Coin({x:660,y:460}));
+	stage.insert(new Q.Coin({x:690,y:460}));
+	stage.insert(new Q.Coin({x:720,y:460}));
+	stage.insert(new Q.Coin({x:750,y:460}));
+	stage.insert(new Q.Coin({x:780,y:460}));
 
 
 	stage.add("viewport").follow(player);
@@ -220,6 +264,7 @@ Q.scene('mainTitleScene',function(stage) {
 		Q.input.on("confirm",this,function(){
 			Q.clearStages();
 			Q.stageScene("level1");
+			Q.stageScene("HUD",1);
 
 			
 		});
@@ -227,6 +272,7 @@ Q.scene('mainTitleScene',function(stage) {
 		button.on("click",function() {
 			Q.clearStages();
 			Q.stageScene("level1");
+			Q.stageScene("HUD",1);
 			
 		});
 
@@ -259,7 +305,37 @@ Q.scene('endGame',function(stage) {
 
 
 
+Q.Sprite.extend("Coin",{
 
+	init: function(p){
+		this._super(p,{
+			sheet:"coin",
+			x: 300,
+			y: 400,
+			angle:0,
+			touched:false,
+			sensor:true
+
+
+		});
+		this.add("tween");
+
+		this.on("hit", function(collision){
+
+			if(collision.obj.isA("Mario")&&(!this.p.touched)){
+
+				//this avoid giving more than 1 point for each coin,
+				// becuase the until the anim is not over is not eliminated
+				this.p.touched=true;
+				
+				this.animate({y: this.p.y - 50},0.2,Q.Easing.Linear,{callback: function(){this.destroy()}});
+				Q.state.inc("score",1);
+			}
+		})
+	}
+
+
+});
 
 
 });
