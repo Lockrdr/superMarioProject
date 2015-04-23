@@ -1,0 +1,7 @@
+{
+	"KoopaTroopaR":{"sx":0,"sy":0,"tileW":32,"tileH":48,"frames":2},
+	"KoopaParatroopaR":{"sx":64,"sy":0,"tileW":32,"tileH":48,"frames":2},
+	"KoopaTroopaL":{"sx":128,"sy":0,"tileW":32,"tileH":48,"frames":2},
+	"KoopaParatroopaL":{"sx":192,"sy":0,"tileW":32,"tileH":48,"frames":2},
+	"KoopaShell":{"sx":256,"sy":0,"tileW":32,"tileH":45,"frames":1}
+}

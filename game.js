@@ -27,8 +27,20 @@ Q.animations("bloopaAnim", {
 });
 
 Q.animations("goombaAnim",{ 
+	
+
 	move: {frames: [0,1], rate: 1/5},
 	die: {frames: [2], rate: 1/5, loop:false, trigger: "deathEvent"}
+});
+
+Q.animations("koopaAnim",{ 
+	moveRight: {frames: [0,1], rate: 1/5},
+	flyR: {frames: [2,3], rate: 1/5},
+	moveLeft: {frames: [4,5], rate: 1/5},
+	flyL: {frames: [6,7], rate: 1/5},
+	shell: {frames:[8],rate:1/15},
+	die: {frames: [10], rate: 1/5, loop:false, trigger: "deathEvent"}
+	
 });
 
 Q.Sprite.extend("Mario",{
@@ -39,9 +51,9 @@ Q.Sprite.extend("Mario",{
 	this._super(p, {
 		sheet: "marioR",
 		sprite:"marioAnim",
-		x: 550,
+		x: 150,
 		y: 500,
-		jumpSpeed:-600
+		jumpSpeed:-400
 
 	});
 
@@ -67,6 +79,119 @@ Q.Sprite.extend("Mario",{
 	}
 
 });
+
+Q.Sprite.extend("Koopa",{
+
+	init:function(p){
+		this._super(p,{
+			sheet:"KoopaTroopaR",
+			sprite:"koopaAnim",
+			x:350,
+			y:400,
+			initY:400,
+			gravity:0.2,
+			direction:"right",
+			flying: true,
+			outOfShell: true,
+			movingShell:false,
+			downardRange:100,
+			upwardSpeed:202
+
+
+		});
+
+	this.add("2d,animation,aiBounce");
+	this.play("flyR");
+
+
+	this.on("bump.bottom",function(collision){
+
+		if(collision.obj.isA("Mario")){
+			Q.stageScene("endGame",1, { label: "You died" });
+			collision.obj.destroy();
+		}
+	})
+
+	this.on("bump.left,bump.right",function(collision){
+		if(!this.p.flying&&this.p.outOfShell)
+			if (this.p.direction=="right"){
+				this.play("moveLeft")
+				this.p.direction="left";
+			}
+			else{
+			
+				this.play("moveRight");
+				this.p.direction="right";
+			}
+		if(collision.obj.isA("Mario"))
+		{
+			if(this.p.outOfShell||this.p.movingShell){
+				Q.stageScene("endGame",1, { label: "You died" });
+				collision.obj.destroy();
+			}
+			else
+			{
+				
+				if(collision.obj.p.direction=="right"){
+					this.p.x+=10;
+					this.p.vx=200;
+				 }else{
+					this.p.x-=10;
+					this.p.vx=-200;
+
+				}
+				this.p.movingShell=true;
+			}
+		}
+		
+	 });
+
+	this.on("bump.top",function(collision){
+		if(collision.obj.isA("Mario")){
+			
+			collision.obj.p.vy = -300;
+			if(this.p.flying){
+				this.p.gravity=1;
+				this.p.flying=false;
+				this.play("moveRight");
+				this.p.vx=50;
+
+				this.step=null;
+
+				
+			}else if(this.p.outOfShell)
+			{
+				//get inside shell
+				
+				this.play("shell");
+				this.p.outOfShell=false;
+				this.p.movingShell=false;
+				this.p.vx=0;
+				
+			}
+			else if(this.p.movingShell){
+				this.p.vx=0;
+				this.p.movingShell=false;
+			}
+			else{
+				//die
+			}
+		}
+	});
+
+
+	},
+	step: function(dt){
+
+		if(this.p.y>=this.p.initY+this.p.downardRange){
+			this.p.vy= -this.p.upwardSpeed;
+		}
+		
+	}
+
+});
+
+
 
 Q.Sprite.extend("Goomba",{
 
@@ -167,7 +292,7 @@ Q.Sprite.extend("Princess",{
 
 
 
-Q.loadTMX("coin.png, coin.json,mainTitle.png,princess.png, bloopa.png, bloopa.json, goomba.png,goomba.json, mario_small.json, mario_small.png, level.tmx",function(){
+Q.loadTMX("koopa.png,koopa.json,coin.png, coin.json,mainTitle.png,princess.png, bloopa.png, bloopa.json, goomba.png,goomba.json, mario_small.json, mario_small.png, level.tmx",function(){
 		
 
 	Q.sheet("princess","princess.png",{
@@ -181,6 +306,7 @@ Q.loadTMX("coin.png, coin.json,mainTitle.png,princess.png, bloopa.png, bloopa.js
 		Q.compileSheets("goomba.png","goomba.json");
 		Q.compileSheets("bloopa.png","bloopa.json");
 		Q.compileSheets("coin.png","coin.json");
+		Q.compileSheets("koopa.png","koopa.json");
 
 		Q.stageScene("mainTitleScene");
 
@@ -220,8 +346,9 @@ Q.scene("level1",function(stage)
 	Q.stageTMX("level.tmx",stage)
 		
 	var player = stage.insert(new Q.Mario());
-	var goomba = stage.insert(new Q.Goomba());
-	var bloopa = stage.insert(new Q.Bloopa());
+	//var goomba = stage.insert(new Q.Goomba());
+	//var bloopa = stage.insert(new Q.Bloopa());
+	var koopa = stage.insert(new Q.Koopa());
 	var princess = stage.insert(new Q.Princess());
 	
 
