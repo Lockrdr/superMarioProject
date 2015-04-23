@@ -1,0 +1,22 @@
+Mecanicas Implementadas:
+
+Se han implementado todas las mecanicas principales:
+
+-Carga TMX
+-Mario en escena
+-Goomba
+-Bloopa (con movimientos de saltos)
+- Fin de juego al morir
+- Fin de juego al ganar
+- Menu de inicio
+- Animaciones
+- Modenas
+- Componente para enemigos
+- Sonidos
+
+Mejoras
+
+- KoopaTroopa/Paratroopa: se ha añadido un koopa que vuela y tiene movimientos verticales, cuando mario cae sobre este, pierde las alas y actua como un koopa sin alas. Se mueve y rebota contra paredes. Si mario cae sobre el, este se metera en el caparazon. En este estado no puede matar a mario y se le puede colisionar por los lados para que coja velocidad y se mueva horizontalmente. 
+Si estando en movimiento colisiona con mario, mario morira. Si mario cae sobre el y esta en movimiento este se parará.
+Para destruirlo hay que caer sobre el cuando esta quieto.
+
